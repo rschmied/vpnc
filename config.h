@@ -5,17 +5,17 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-   $Id: config.h 312 2008-06-15 18:09:42Z Joerg Mayer $
+   $Id$
 */
 
 #ifndef __CONFIG_H__
@@ -40,6 +40,7 @@ enum config_enum {
 	CONFIG_VERSION,
 	CONFIG_IF_NAME,
 	CONFIG_IF_MODE,
+	CONFIG_IF_MTU,
 	CONFIG_IKE_DH,
 	CONFIG_IPSEC_PFS,
 	CONFIG_IPSEC_GATEWAY,
@@ -58,6 +59,7 @@ enum config_enum {
 	CONFIG_AUTH_MODE,
 	CONFIG_CA_FILE,
 	CONFIG_CA_DIR,
+	CONFIG_PASSWORD_HELPER,
 	LAST_CONFIG
 };
 
@@ -130,5 +132,9 @@ extern uint16_t opt_udpencapport;
 
 extern void hex_dump(const char *str, const void *data, ssize_t len, const struct debug_strings *decode);
 extern void do_config(int argc, char **argv);
+extern char *vpnc_getpass(const char *prompt);
+
+extern void (*logmsg)(int priority, const char *format, ...)
+	__attribute__ ((__format__ (__printf__, 2, 3)));
 
 #endif

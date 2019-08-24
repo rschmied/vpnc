@@ -5,17 +5,17 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-   $Id: isakmp.h 324 2008-06-19 23:09:09Z Joerg Mayer $
+   $Id$
 */
 
 #ifndef __ISAKMP_H__
@@ -418,6 +418,7 @@ enum isakmp_modecfg_attrib_enum {
 	ISAKMP_MODECFG_ATTRIB_INTERNAL_IP4_SUBNET,
 	ISAKMP_MODECFG_ATTRIB_SUPPORTED_ATTRIBUTES,
 	ISAKMP_MODECFG_ATTRIB_INTERNAL_IP6_SUBNET,
+	ISAKMP_MODECFG_ATTRIB_CISCO_UNKNOWN_0X0015 = 0x0015,
 	ISAKMP_XAUTH_06_ATTRIB_TYPE = 0x4088,
 	ISAKMP_XAUTH_06_ATTRIB_USER_NAME,
 	ISAKMP_XAUTH_06_ATTRIB_USER_PASSWORD,
@@ -436,6 +437,10 @@ enum isakmp_modecfg_attrib_enum {
 	ISAKMP_MODECFG_ATTRIB_CISCO_UDP_ENCAP_PORT,
 	ISAKMP_MODECFG_ATTRIB_CISCO_UNKNOWN, /* whatever 0x7006 is... */
 	ISAKMP_MODECFG_ATTRIB_CISCO_DO_PFS,
+	/* Cisco Ext: Smartcard Disconnect */
+	/* Cisco Ext: IKE_CFG_FWTYPE_VENDOR */
+	/* Cisco Ext: IKE_CFG_FWTYPE_PRODUCT */
+	/* Cisco Ext: IKE_CFG_FWTYPE_CAPABILITIES??? */
 	ISAKMP_MODECFG_ATTRIB_CISCO_FW_TYPE,
 	ISAKMP_MODECFG_ATTRIB_CISCO_BACKUP_SERVER,
 	ISAKMP_MODECFG_ATTRIB_CISCO_DDNS_HOSTNAME,

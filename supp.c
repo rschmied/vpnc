@@ -6,17 +6,17 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-   $Id: supp.c 312 2008-06-15 18:09:42Z Joerg Mayer $
+   $Id$
 */
 
 #include "supp.h"
@@ -55,14 +55,12 @@ const supported_algo_t supp_crypt[] = {
 const supported_algo_t supp_auth[] = {
 	{"psk", 0, IKE_AUTH_PRESHARED, 0, 0},
 	{"psk+xauth", 0, IKE_AUTH_XAUTHInitPreShared, 0, 0},
-#ifdef OPENSSL_GPL_VIOLATION
 #if 0
 	{"cert(dsa)", 0, IKE_AUTH_RSA_SIG, 0, 0},
 	{"cert(rsasig)", 0, IKE_AUTH_DSS, 0, 0},
 	{"hybrid(dsa)", 0, IKE_AUTH_DSS, 0, 0},
 #endif /* 0 */
 	{"hybrid(rsa)", 0, IKE_AUTH_HybridInitRSA, 0, 0},
-#endif /* OPENSSL_GPL_VIOLATION */
 	{NULL, 0, 0, 0, 0}
 };
 

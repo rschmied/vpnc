@@ -1,6 +1,6 @@
-#! /usr/bin/perl -w
+#! /usr/bin/env perl
 
-# $Id: makeman.pl 312 2008-06-15 18:09:42Z Joerg Mayer $
+# $Id$
 
 # Written by Wolfram Sang (wolfram@the-dreams.de) in 2007,
 # some inspiration from help2man by Brendan O'Dea and from Perl::Critic
@@ -16,6 +16,7 @@
 # Distributed under the same licence as vpnc.
 
 use strict;
+use warnings;
 use Fatal    qw(open close);
 use filetest qw(access);	# to always get errno-values on filetests
 use POSIX    qw(strftime setlocale LC_ALL);
@@ -48,12 +49,12 @@ while (<$LONGHELP>) {
 		$indent_needed = 1;
 	    }
 	}
-	
+
 	# Highlight the option and make an optional argument italic.
 	if (s/^ *(--[\w-]+)/\n.TP\n.BI "$1"/) {
 	    s/(<.+>)/ " $1"/;
 	}
-	
+
 	# Highlight conffile-only options.
 	s/^ *(\(configfile only option\))/\n.TP\n.B $1/;
 
@@ -78,7 +79,7 @@ while (<$LONGHELP>) {
 	    $vpnc_options .= ".IP\n";
 	    $indent_needed = 0;
 	}
-	
+
 	# Finalize string and add it to buffer
         s/^ *//;
 	s/ *$//;
@@ -91,7 +92,8 @@ close $LONGHELP;
 # Hopefully the code speaks for itself from now on...
 
 setlocale( LC_ALL, 'C' );
-my $date = strftime( '%B %Y', localtime );
+my $write_secs = (stat("./vpnc.8.template"))[9];
+my $date = strftime( '%B %Y', localtime($write_secs) );
 
 open my $VERSION, '<', './VERSION';
 my $vpnc_version = <$VERSION>;

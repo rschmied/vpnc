@@ -1,5 +1,5 @@
 .\" Template to generate the vpnc-manpage
-.\" $Id: vpnc.8.template 312 2008-06-15 18:09:42Z Joerg Mayer $
+.\" $Id$
 .\"
 .TH VPNC "8" "Warning: Just a template!" "vpnc man-template" "Warning: Just a template!"
 .\" Fake header just to make this file viewable with man.
@@ -15,7 +15,7 @@ This manual page documents briefly the
 \fBvpnc\fR and
 \fBvpnc\-disconnect\fR commands.
 .PP
-\fBvpnc\fR is a 
+\fBvpnc\fR is a
 VPN client for the Cisco 3000 VPN  Concentrator,  creating  a IPSec-like
 connection as a tunneling network device for the local system. It uses
 the TUN/TAP driver in  Linux  kernel  2.4  and  above  and device tun(4)
@@ -79,13 +79,23 @@ and
 .B /etc/vpnc.conf
 will be loaded.
 
+.PP
+
+Additionally, if the configuration
+file "-" is specified on the command-line
+vpnc will read configuration from
+stdin.  The configuration is parsed and
+the connection proceeds when stdin is
+closed or the special character CEOT
+(CTRL-D) is read.
+
 .SH OPTIONS
 The program options can be either given as arguments (but not all of them
 for security reasons) or be stored in a configuration file.
 .PD 0
 .\" ###makeman.pl: Insert options from help-output here!
 
-.HP 
+.HP
 \fB\-\-print\-config\fR
 .IP
 Prints your configuration; output can be used as vpnc.conf
@@ -95,7 +105,7 @@ Prints your configuration; output can be used as vpnc.conf
 .I /etc/vpnc/default.conf
 .RS
 The default configuration file. You can specify the same config
-directives as with command line options and additionaly
+directives as with command line options and additionally
 .B IPSec secret
 and
 .B Xauth password
@@ -176,7 +186,7 @@ named something like 722d15bd.X, where X is a manually assigned number to
 make sure that files with colliding hashes have different names. The number
 can be derived from the certificate file itself:
 .P
-openssl x509 -subject_hash -noout -in /etc/vpnc/vpn-example-com.pem
+openssl x509 \-subject_hash \-noout \-in /etc/vpnc/vpn\-example\-com.pem
 
 See also the
 .B \-\-print\-config
@@ -187,12 +197,6 @@ Advanced features like manual setting of multiple target routes and
 disabling /etc/resolv.conf rewriting is documented in the README of the
 vpnc package.
 
-.SH TODO
-.PD 0
-Certificate support (Pre-Shared-Key + XAUTH is known to be insecure).
-.P
-Further points can be found in the TODO file.
-.PD
 
 .SH AUTHOR
 This man-page has been written by Eduard Bloch <blade(at)debian.org> and
@@ -200,14 +204,14 @@ Christian Lackas <delta(at)lackas.net>, based on vpnc README by
 Maurice Massar <vpnc(at)unix\-ag.uni\-kl.de>.
 Permission is
 granted to copy, distribute and/or modify this document under
-the terms of the GNU General Public License, Version 2 any 
+the terms of the GNU General Public License, Version 2 any
 later version published by the Free Software Foundation.
 .PP
 On Debian systems, the complete text of the GNU General Public
 License can be found in /usr/share/common\-licenses/GPL.
 .SH "SEE ALSO"
 .BR pcf2vpnc (1),
-.BR cisco-decrypt (1),
+.BR cisco\-decrypt (1),
 .BR ip (8),
 .BR ifconfig (8),
 .BR route (1),

@@ -1,5 +1,4 @@
 /* IPSec VPN client compatible with Cisco equipment.
-   Copyright (C) 2002, 2003, 2004  Geoffrey Keating and Maurice Massar
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,18 +13,21 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-   $Id$
 */
 
-#ifndef __VPNC_H__
-#define __VPNC_H__
-
-#include "tunip.h"
-
-void process_late_ike(struct sa_block *s, uint8_t *r_packet, ssize_t r_length);
-void keepalive_ike(struct sa_block *s);
-void dpd_ike(struct sa_block *s);
-void print_vid(const unsigned char *vid, uint16_t len);
-
+#ifndef OPENSSL_GPL_VIOLATION
+#error "openssl support cannot be built without defining OPENSSL_GPL_VIOLATION"
 #endif
+
+#ifndef __CRYPTO_OPENSSL_H__
+#define __CRYPTO_OPENSSL_H__
+
+#include <openssl/x509.h>
+#include <openssl/err.h>
+
+typedef struct {
+	STACK_OF(X509) *stack;
+} crypto_ctx;
+
+#endif  /* __CRYPTO_OPENSSL_H__ */
+

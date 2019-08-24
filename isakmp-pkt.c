@@ -6,17 +6,17 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-   $Id: isakmp-pkt.c 312 2008-06-15 18:09:42Z Joerg Mayer $
+   $Id$
 */
 
 #include <assert.h>
@@ -300,6 +300,19 @@ struct isakmp_attribute *new_isakmp_attribute_16(uint16_t type, uint16_t data,
 	return r;
 }
 
+static void free_isakmp_attributes(struct isakmp_attribute *attributes)
+{
+	struct isakmp_attribute *att, *nextatt;
+	for (att = attributes; att; att = nextatt) {
+		nextatt = att->next;
+		if (att->af == isakmp_attr_lots)
+			free(att->u.lots.data);
+		if (att->af == isakmp_attr_acl)
+			free(att->u.acl.acl_ent);
+		free(att);
+	}
+}
+
 struct isakmp_packet *new_isakmp_packet(void)
 {
 	return xallocc(sizeof(struct isakmp_packet));
@@ -347,15 +360,7 @@ static void free_isakmp_payload(struct isakmp_payload *p)
 		free_isakmp_payload(p->u.p.transforms);
 		break;
 	case ISAKMP_PAYLOAD_T:
-		{
-			struct isakmp_attribute *att, *natt;
-			for (att = p->u.t.attributes; att; att = natt) {
-				natt = att->next;
-				if (att->af == isakmp_attr_lots)
-					free(att->u.lots.data);
-				free(att);
-			}
-		}
+		free_isakmp_attributes(p->u.t.attributes);
 		break;
 	case ISAKMP_PAYLOAD_KE:
 	case ISAKMP_PAYLOAD_HASH:
@@ -376,6 +381,7 @@ static void free_isakmp_payload(struct isakmp_payload *p)
 	case ISAKMP_PAYLOAD_N:
 		free(p->u.n.spi);
 		free(p->u.n.data);
+		free_isakmp_attributes(p->u.n.attributes);
 		break;
 	case ISAKMP_PAYLOAD_D:
 		if (p->u.d.spi) {
@@ -386,17 +392,7 @@ static void free_isakmp_payload(struct isakmp_payload *p)
 		}
 		break;
 	case ISAKMP_PAYLOAD_MODECFG_ATTR:
-		{
-			struct isakmp_attribute *att, *natt;
-			for (att = p->u.modecfg.attributes; att; att = natt) {
-				natt = att->next;
-				if (att->af == isakmp_attr_lots)
-					free(att->u.lots.data);
-				if (att->af == isakmp_attr_acl)
-					free(att->u.acl.acl_ent);
-				free(att);
-			}
-		}
+		free_isakmp_attributes(p->u.modecfg.attributes);
 		break;
 	default:
 		abort();
@@ -472,7 +468,7 @@ static const struct debug_strings *attr_val_to_debug_strings(enum isakmp_ipsec_p
 	}
 }
 
-#define fetch4()  					\
+#define fetch4()					\
   (data += 4, data_len -= 4,				\
    (uint32_t)(data[-4]) << 24 | (uint32_t)(data[-3]) << 16	\
    | (uint32_t)(data[-2]) << 8 | data[-1])
@@ -536,7 +532,7 @@ static struct isakmp_attribute *parse_isakmp_attributes(const uint8_t ** data_p,
 				return r;
 			}
 			r->u.acl.acl_ent = xallocc(r->u.acl.count * sizeof(struct acl_ent_s));
-			
+
 			for (i = 0; i < r->u.acl.count; i++) {
 				fetchn(&r->u.acl.acl_ent[i].addr.s_addr, 4);
 				fetchn(&r->u.acl.acl_ent[i].mask.s_addr, 4);
@@ -820,7 +816,7 @@ struct isakmp_packet *parse_isakmp_packet(const uint8_t * data, size_t data_len,
 	}
 
 	DEBUG(3, printf("BEGIN_PARSE\n"));
-	DEBUG(3, printf("Recieved Packet Len: %d\n", data_len));
+	DEBUG(3, printf("Received Packet Len: %zu\n", data_len));
 	fetchn(r->i_cookie, ISAKMP_COOKIE_LENGTH);
 	hex_dump("i_cookie", r->i_cookie, ISAKMP_COOKIE_LENGTH, NULL);
 	fetchn(r->r_cookie, ISAKMP_COOKIE_LENGTH);

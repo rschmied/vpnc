@@ -1,12 +1,11 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 # Usage: ./enum2debug.pl isakmp.h  >vpnc-debug.c 2>vpnc-debug.h
 
 use strict;
+use warnings;
 
 my $in_enum = 0;
-my $element;
-my $arrayname;
 
 print STDERR << 'EOF';
 /* Automatically generated with enum2debug.pl: Don't edit! */
@@ -33,10 +32,10 @@ const char *val_to_string(unsigned int val, const struct debug_strings *dstrings
 	static const char *unknown = " (unknown)";
 	static const char *na = "";
 	unsigned int i;
-	
+
 	if (dstrings == NULL)
 		return na;
-	
+
 	for (i = 0; dstrings[i].id != 0 || dstrings[i].string != NULL; i++)
 		if (dstrings[i].id == val)
 			return dstrings[i].string;
@@ -53,6 +52,8 @@ while (<>) {
 	} elsif ($in_enum && /^}/) {
 		print "\t{ 0,\t(const char *) 0 }\n};\n\n";
 		$in_enum = 0;
+	} elsif (/^\s*\/\*.*\*\/\s*$/) {
+		next;
 	} elsif ($in_enum && /^\W*(\w+)\W*/) {
 		print "\t{ $1,\t\" ($1)\" },\n";
 	}

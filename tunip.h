@@ -5,17 +5,17 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-   $Id: tunip.h 312 2008-06-15 18:09:42Z Joerg Mayer $
+   $Id$
 */
 
 #ifndef __TUNIP_H__
@@ -37,12 +37,12 @@ struct lifetime {
 struct ike_sa {
 	uint32_t spi;
 	uint32_t seq_id; /* for replay protection (not implemented) */
-	
+
 	uint8_t *key;
 	uint8_t *key_cry;
 	gcry_cipher_hd_t cry_ctx;
 	uint8_t *key_md;
-	
+
 	/* Description of the packet being processed */
 	unsigned char *buf;
 	unsigned int bufsize, bufpayload, var_header_size;
@@ -60,20 +60,20 @@ enum natt_active_mode_enum{
 
 struct sa_block {
 	const char *pidfile;
-	
+
 	int tun_fd; /* fd to host via tun/tap */
 	char tun_name[IFNAMSIZ];
 	uint8_t tun_hwaddr[ETH_ALEN];
-	
+
 	struct in_addr dst; /* ip of concentrator, must be set */
 	struct in_addr src; /* local ip, from getsockname() */
-	
+
 	struct in_addr opt_src_ip; /* configured local ip, can be 0.0.0.0 */
-	
+
 	/* these sockets are connect()ed */
 	int ike_fd; /* fd over isakmp traffic, and in case of NAT-T esp too */
 	int esp_fd; /* raw socket for ip-esp or Cisco-UDP or ike_fd (NAT-T) */
-	
+
 	struct {
 		int timeout;
 		uint8_t *resend_hash;
@@ -97,8 +97,17 @@ struct sa_block {
 		uint32_t dpd_seqno_ack;
 		time_t dpd_sent;
 		unsigned int dpd_attempts;
+		uint8_t *psk_hash;
+		uint8_t *sa_f, *idi_f;
+		size_t sa_size, idi_size;
+		uint8_t *dh_public;
+		struct group *dh_grp;
+		uint8_t i_nonce[20];
+		uint8_t *returned_hash;
+		int natd_type;
+		uint8_t *natd_us, *natd_them;
 	} ike;
-	uint8_t our_address[4], our_netmask[4];
+	struct in_addr our_address;
 	struct {
 		int do_pfs;
 		int cry_algo, md_algo;

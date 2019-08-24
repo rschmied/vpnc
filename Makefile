@@ -7,17 +7,17 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: Makefile 312 2008-06-15 18:09:42Z Joerg Mayer $
+# $Id$
 
 DESTDIR=
 PREFIX=/usr/local
@@ -27,16 +27,8 @@ SBINDIR=$(PREFIX)/sbin
 MANDIR=$(PREFIX)/share/man
 DOCDIR=$(PREFIX)/share/doc/vpnc
 
-SRCS = sysdep.c vpnc-debug.c isakmp-pkt.c tunip.c config.c dh.c math_group.c supp.c decrypt-utils.c
-BINS = vpnc cisco-decrypt
-OBJS = $(addsuffix .o,$(basename $(SRCS)))
-BINOBJS = $(addsuffix .o,$(BINS))
-BINSRCS = $(addsuffix .c,$(BINS))
-VERSION := $(shell sh mk-version)
-RELEASE_VERSION := $(shell cat VERSION)
-
 # The license of vpnc (Gpl >= 2) is quite likely incompatible with the
-# openssl license. Openssl is currently used to provide certificate
+# openssl license. Openssl is one possible library used to provide certificate
 # support for vpnc (hybrid only).
 # While it is OK for users to build their own binaries linking in openssl
 # with vpnc and even providing dynamically linked binaries it is probably
@@ -47,38 +39,56 @@ RELEASE_VERSION := $(shell cat VERSION)
 
 # Comment this in to obtain a binary with certificate support which is
 # GPL incompliant though.
-#OPENSSL_GPL_VIOLATION = -DOPENSSL_GPL_VIOLATION
-#OPENSSLLIBS = -lcrypto
+#OPENSSL_GPL_VIOLATION=yes
 
-CC=gcc
+CRYPTO_LDADD = $(shell pkg-config --libs gnutls)
+CRYPTO_CFLAGS = $(shell pkg-config --cflags gnutls) -DCRYPTO_GNUTLS
+CRYPTO_SRCS = crypto-gnutls.c
+
+ifeq ($(OPENSSL_GPL_VIOLATION), yes)
+CRYPTO_LDADD = -lcrypto
+CRYPTO_CFLAGS = -DOPENSSL_GPL_VIOLATION -DCRYPTO_OPENSSL
+CRYPTO_SRCS = crypto-openssl.c
+endif
+
+SRCS = sysdep.c vpnc-debug.c isakmp-pkt.c tunip.c config.c dh.c math_group.c supp.c decrypt-utils.c crypto.c $(CRYPTO_SRCS)
+BINS = vpnc cisco-decrypt test-crypto
+OBJS = $(addsuffix .o,$(basename $(SRCS)))
+CRYPTO_OBJS = $(addsuffix .o,$(basename $(CRYPTO_SRCS)))
+BINOBJS = $(addsuffix .o,$(BINS))
+BINSRCS = $(addsuffix .c,$(BINS))
+VERSION := $(shell sh mk-version)
+RELEASE_VERSION := $(shell cat VERSION)
+
+CC ?= gcc
 CFLAGS ?= -O3 -g
 CFLAGS += -W -Wall -Wmissing-declarations -Wwrite-strings
-CFLAGS +=  $(shell libgcrypt-config --cflags)
-CPPFLAGS += -DVERSION=\"$(VERSION)\" $(OPENSSL_GPL_VIOLATION)
+CFLAGS +=  $(shell libgcrypt-config --cflags) $(CRYPTO_CFLAGS)
+CPPFLAGS += -DVERSION=\"$(VERSION)\"
 LDFLAGS ?= -g
-LDFLAGS += $(shell libgcrypt-config --libs) $(OPENSSLLIBS)
+LIBS += $(shell libgcrypt-config --libs) $(CRYPTO_LDADD)
 
 ifeq ($(shell uname -s), SunOS)
-LDFLAGS += -lnsl -lresolv -lsocket
+LIBS += -lnsl -lresolv -lsocket
 endif
 ifneq (,$(findstring Apple,$(shell $(CC) --version)))
 # enabled in FSF GCC, disabled by default in Apple GCC
 CFLAGS += -fstrict-aliasing -freorder-blocks -fsched-interblock
 endif
 
-all : $(BINS) vpnc.8 vpnc-script
+all : $(BINS) vpnc.8
 
 vpnc : $(OBJS) vpnc.o
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 vpnc.8 : vpnc.8.template makeman.pl vpnc
 	./makeman.pl
 
-vpnc-script : vpnc-script.in
-	sed -e 's,@''PREFIX''@,$(PREFIX),g' $< > $@ && chmod 755 $@
-
 cisco-decrypt : cisco-decrypt.o decrypt-utils.o
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+test-crypto : sysdep.o test-crypto.o crypto.o $(CRYPTO_OBJS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 .depend: $(SRCS) $(BINSRCS)
 	$(CC) -MM $(SRCS) $(BINSRCS) $(CFLAGS) $(CPPFLAGS) > $@
@@ -103,13 +113,17 @@ vpnc-%.tar.gz :
 	tar -czf ../$@ vpnc-$*
 	rm -rf vpnc-$*
 
+test : all
+	./test-crypto test/sig_data.bin test/dec_data.bin test/ca_list.pem \
+		test/cert3.pem test/cert2.pem test/cert1.pem test/cert0.pem
+
 dist : VERSION vpnc.8 vpnc-$(RELEASE_VERSION).tar.gz
 
 clean :
 	-rm -f $(OBJS) $(BINOBJS) $(BINS) tags
 
 distclean : clean
-	-rm -f vpnc-debug.c vpnc-debug.h vpnc.ps vpnc.8 .depend vpnc-script
+	-rm -f vpnc-debug.c vpnc-debug.h vpnc.ps vpnc.8 .depend
 
 install-common: all
 	install -d $(DESTDIR)$(ETCDIR) $(DESTDIR)$(BINDIR) $(DESTDIR)$(SBINDIR) $(DESTDIR)$(MANDIR)/man1 $(DESTDIR)$(MANDIR)/man8 $(DESTDIR)$(DOCDIR)
